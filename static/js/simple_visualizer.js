@@ -13,18 +13,20 @@ let currentTopAtoms = [];
 let currentSideAtoms = [];
 let currentBondsTop = [];
 let currentBondsSide = [];
+let currentTopOptions = {};
+let currentSideOptions = {};
 let canResize = false;
 
 // Responsive visualization - redraw when window is resized
 window.addEventListener('resize', function() {
     if (canResize && currentTopAtoms.length > 0) {
-        drawMoleculeTopView('topViewCanvas', currentTopAtoms, currentBondsTop);
-        drawMoleculeSideView('sideViewCanvas', currentSideAtoms, currentBondsSide);
+        drawMoleculeTopView('topViewCanvas', currentTopAtoms, currentBondsTop, currentTopOptions);
+        drawMoleculeSideView('sideViewCanvas', currentSideAtoms, currentBondsSide, currentSideOptions);
     }
 });
 
 // Function to create a static top view of the molecule
-function createTopView(pdbData, canvasId) {
+function createTopView(pdbData, canvasId, options = {}) {
     // Parse the PDB data to extract coordinates
     const atoms = parsePdbAtoms(pdbData);
     console.log(`Parsed ${atoms.length} atoms for static rendering`);
@@ -32,19 +34,31 @@ function createTopView(pdbData, canvasId) {
     // Store for responsive redrawing
     currentTopAtoms = atoms;
     
-    // Calculate bonds between atoms
-    const bonds = calculateBonds(atoms, 3.0); // 3Å threshold for bonds
+    // Apply options
+    const bondThreshold = options.bondThreshold || 3.0; // Default 3Å threshold for bonds
+    const atomSizeMultiplier = options.atomSizeMultiplier || 1.0; // Default size multiplier
+    const colorMapping = options.colorMapping || 'Atom'; // Default color mapping
+    
+    // Calculate bonds between atoms with the specified threshold
+    const bonds = calculateBonds(atoms, bondThreshold);
     currentBondsTop = bonds;
     
+    // Store the options for responsive redrawing
+    currentTopOptions = {
+        bondThreshold: bondThreshold,
+        atomSizeMultiplier: atomSizeMultiplier,
+        colorMapping: colorMapping
+    };
+    
     // Draw the molecule
-    drawMoleculeTopView(canvasId, atoms, bonds);
+    drawMoleculeTopView(canvasId, atoms, bonds, currentTopOptions);
     
     // Enable responsive redrawing
     canResize = true;
 }
 
 // Function to draw the molecule in top view (separating calculation from drawing)
-function drawMoleculeTopView(canvasId, atoms, bonds) {
+function drawMoleculeTopView(canvasId, atoms, bonds, options = {}) {
     // Get the canvas and drawing context
     const canvas = document.getElementById(canvasId);
     if (!canvas) {
@@ -58,16 +72,21 @@ function drawMoleculeTopView(canvasId, atoms, bonds) {
         return;
     }
     
+    // Apply options
+    const atomSizeMultiplier = options.atomSizeMultiplier || 1.0;
+    const colorMapping = options.colorMapping || 'Atom';
+    const visualStyle = options.visualStyle || 'Ball and Stick';
+    
     // Clear canvas and set background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw title
+    // Draw title with visualization style and color mapping
     ctx.fillStyle = '#000000';
     ctx.font = '14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Top View (X-Y Projection)', canvas.width / 2, 20);
+    ctx.fillText('Top View (X-Y) - ' + visualStyle + ' / ' + colorMapping, canvas.width / 2, 20);
     
     // Calculate the bounds of the molecule
     let minX = Infinity, maxX = -Infinity;
@@ -89,8 +108,8 @@ function drawMoleculeTopView(canvasId, atoms, bonds) {
     // Store transformed coordinates for bonds
     const transformedCoords = {};
     
-    // First: Draw bonds
-    ctx.lineWidth = 1;
+    // First: Draw bonds - thicker for "Ball and Stick", thinner for "Protein Ribbon"
+    ctx.lineWidth = visualStyle === 'Ball and Stick' ? 1.5 : 0.8;
     ctx.strokeStyle = '#cccccc';
     
     for (const bond of bonds) {
@@ -127,8 +146,8 @@ function drawMoleculeTopView(canvasId, atoms, bonds) {
             y = (atom.y - minY) * scale + padding;
         }
         
-        // Set circle size based on atom type
-        let radius = 4;  // Increased base size
+        // Set base circle size based on atom type and apply style multiplier
+        let radius = 4;  // Base size
         if (atom.element === 'C') radius = 4;
         else if (atom.element === 'N') radius = 4.5;
         else if (atom.element === 'O') radius = 4.5;
@@ -136,8 +155,30 @@ function drawMoleculeTopView(canvasId, atoms, bonds) {
         else if (atom.element === 'P') radius = 5;
         else radius = 4;
         
-        // Set color based on atom type
-        ctx.fillStyle = getAtomColor(atom.element);
+        // Apply size multiplier from visualization style
+        radius *= atomSizeMultiplier;
+        
+        // Apply color based on selected color mapping
+        let color;
+        switch (colorMapping) {
+            case 'Atom':
+                // Color by atom element
+                color = getAtomColor(atom.element);
+                break;
+            case 'B-Factor':
+                // Simple "mock" B-factor coloring - in reality would use actual B-factor values
+                const zNormalized = (atom.z - Math.min(...atoms.map(a => a.z))) / 
+                                   (Math.max(...atoms.map(a => a.z)) - Math.min(...atoms.map(a => a.z)));
+                color = getBFactorColor(zNormalized);
+                break;
+            case 'Residue':
+                // Simple mock residue coloring - alternating colors by index
+                color = getResidueColor(i % 5);
+                break;
+            default:
+                color = getAtomColor(atom.element);
+        }
+        ctx.fillStyle = color;
         
         // Draw the atom
         ctx.beginPath();
@@ -152,7 +193,7 @@ function drawMoleculeTopView(canvasId, atoms, bonds) {
 }
 
 // Function to create a static side view of the molecule
-function createSideView(pdbData, canvasId) {
+function createSideView(pdbData, canvasId, options = {}) {
     // Parse the PDB data to extract coordinates
     const atoms = parsePdbAtoms(pdbData);
     console.log(`Parsed ${atoms.length} atoms for side view rendering`);
@@ -160,16 +201,30 @@ function createSideView(pdbData, canvasId) {
     // Store for responsive redrawing
     currentSideAtoms = atoms;
     
-    // Calculate bonds between atoms
-    const bonds = calculateBonds(atoms, 3.0); // 3Å threshold for bonds
+    // Apply options
+    const bondThreshold = options.bondThreshold || 3.0; // Default 3Å threshold for bonds
+    const atomSizeMultiplier = options.atomSizeMultiplier || 1.0; // Default size multiplier
+    const colorMapping = options.colorMapping || 'Atom'; // Default color mapping
+    const visualStyle = options.visualStyle || 'Ball and Stick'; // Default style
+    
+    // Calculate bonds between atoms with the specified threshold
+    const bonds = calculateBonds(atoms, bondThreshold);
     currentBondsSide = bonds;
     
+    // Store the options for responsive redrawing
+    currentSideOptions = {
+        bondThreshold: bondThreshold,
+        atomSizeMultiplier: atomSizeMultiplier,
+        colorMapping: colorMapping,
+        visualStyle: visualStyle
+    };
+    
     // Draw the molecule
-    drawMoleculeSideView(canvasId, atoms, bonds);
+    drawMoleculeSideView(canvasId, atoms, bonds, currentSideOptions);
 }
 
 // Function to draw the molecule in side view (separating calculation from drawing)
-function drawMoleculeSideView(canvasId, atoms, bonds) {
+function drawMoleculeSideView(canvasId, atoms, bonds, options = {}) {
     // Get the canvas and drawing context
     const canvas = document.getElementById(canvasId);
     if (!canvas) {
@@ -183,16 +238,21 @@ function drawMoleculeSideView(canvasId, atoms, bonds) {
         return;
     }
     
+    // Apply options
+    const atomSizeMultiplier = options.atomSizeMultiplier || 1.0;
+    const colorMapping = options.colorMapping || 'Atom';
+    const visualStyle = options.visualStyle || 'Ball and Stick';
+    
     // Clear canvas and set background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw title
+    // Draw title with visualization style and color mapping
     ctx.fillStyle = '#000000';
     ctx.font = '14px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Side View (X-Z Projection)', canvas.width / 2, 20);
+    ctx.fillText('Side View (X-Z) - ' + visualStyle + ' / ' + colorMapping, canvas.width / 2, 20);
     
     // Calculate the bounds of the molecule
     let minX = Infinity, maxX = -Infinity;
@@ -214,8 +274,8 @@ function drawMoleculeSideView(canvasId, atoms, bonds) {
     // Store transformed coordinates for bonds
     const transformedCoords = {};
     
-    // First: Draw bonds
-    ctx.lineWidth = 1;
+    // First: Draw bonds - thicker for "Ball and Stick", thinner for "Protein Ribbon"
+    ctx.lineWidth = visualStyle === 'Ball and Stick' ? 1.5 : 0.8;
     ctx.strokeStyle = '#cccccc';
     
     for (const bond of bonds) {
@@ -252,8 +312,8 @@ function drawMoleculeSideView(canvasId, atoms, bonds) {
             y = (atom.z - minZ) * scale + padding;
         }
         
-        // Set circle size based on atom type
-        let radius = 4;  // Increased base size
+        // Set base circle size based on atom type
+        let radius = 4;  // Base size
         if (atom.element === 'C') radius = 4;
         else if (atom.element === 'N') radius = 4.5;
         else if (atom.element === 'O') radius = 4.5;
@@ -261,13 +321,35 @@ function drawMoleculeSideView(canvasId, atoms, bonds) {
         else if (atom.element === 'P') radius = 5;
         else radius = 4;
         
+        // Apply size multiplier from visualization style
+        radius *= atomSizeMultiplier;
+        
         // Add small adjustment for depth effect (based on Y position)
         const depthFactor = 0.5 + 0.5 * (atom.y - Math.min(...atoms.map(a => a.y))) / 
                               (Math.max(...atoms.map(a => a.y)) - Math.min(...atoms.map(a => a.y)));
         radius *= depthFactor;
         
-        // Set color based on atom type
-        ctx.fillStyle = getAtomColor(atom.element);
+        // Apply color based on selected color mapping
+        let color;
+        switch (colorMapping) {
+            case 'Atom':
+                // Color by atom element
+                color = getAtomColor(atom.element);
+                break;
+            case 'B-Factor':
+                // Simple "mock" B-factor coloring - in reality would use actual B-factor values
+                const yNormalized = (atom.y - Math.min(...atoms.map(a => a.y))) / 
+                                   (Math.max(...atoms.map(a => a.y)) - Math.min(...atoms.map(a => a.y)));
+                color = getBFactorColor(yNormalized);
+                break;
+            case 'Residue':
+                // Simple mock residue coloring - alternating colors by index
+                color = getResidueColor(i % 5);
+                break;
+            default:
+                color = getAtomColor(atom.element);
+        }
+        ctx.fillStyle = color;
         
         // Draw the atom
         ctx.beginPath();
@@ -362,4 +444,26 @@ function getAtomColor(element) {
     };
     
     return atomColors[element] || '#808080'; // Default to gray
+}
+
+// Helper function to get color for B-factor
+function getBFactorColor(value) {
+    // Color gradient from blue (cold) to red (hot)
+    const r = Math.floor(255 * value);
+    const b = Math.floor(255 * (1 - value));
+    return `rgb(${r}, 100, ${b})`;
+}
+
+// Helper function to get color for residue types
+function getResidueColor(index) {
+    // Different colors for different residue types
+    const residueColors = [
+        '#33FF33', // Green
+        '#3333FF', // Blue
+        '#FF3333', // Red
+        '#33FFFF', // Cyan
+        '#FF33FF'  // Magenta
+    ];
+    
+    return residueColors[index % residueColors.length];
 }

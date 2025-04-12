@@ -56,6 +56,23 @@
         }
         .info-card:hover {
             transform: translateY(-5px);
+        }
+        /* B-factor gradient styles */
+        .b-factor-gradient {
+            width: 100%;
+            padding: 10px 0;
+        }
+        .gradient-bar {
+            width: 100%;
+            height: 20px;
+            border-radius: 4px;
+            background: linear-gradient(to right, blue, purple, red);
+        }
+        .caption {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+        }
+        .info-card:hover {
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         @media (max-width: 600px) {
@@ -89,7 +106,7 @@
             <v-main>
                 <v-container>
                     <v-row v-if="pdbInfo.filename">
-                        <v-col cols="12" md="6">
+                        <v-col cols="12" md="4">
                             <v-card class="info-card mb-4">
                                 <v-card-title>
                                     <v-icon left color="teal">mdi-information-outline</v-icon>
@@ -111,16 +128,75 @@
                                 </v-card-text>
                             </v-card>
                         </v-col>
-                        <v-col cols="12" md="6">
+                        <v-col cols="12" md="4">
+                            <v-card class="info-card mb-4">
+                                <v-card-title>
+                                    <v-icon left color="teal">mdi-palette</v-icon>
+                                    Visualization Options
+                                </v-card-title>
+                                <v-card-text>
+                                    <v-select
+                                        v-model="visualStyle"
+                                        :items="visualStyles"
+                                        label="Visual Style"
+                                        outlined
+                                        dense
+                                        @change="updateVisualization"
+                                    >
+                                        <template v-slot:prepend-inner>
+                                            <v-icon color="teal">mdi-eye</v-icon>
+                                        </template>
+                                    </v-select>
+                                    
+                                    <v-select
+                                        v-model="colorMapping"
+                                        :items="colorMappings"
+                                        label="Color Mapping"
+                                        outlined
+                                        dense
+                                        @change="updateVisualization"
+                                    >
+                                        <template v-slot:prepend-inner>
+                                            <v-icon color="teal">mdi-palette</v-icon>
+                                        </template>
+                                    </v-select>
+                                </v-card-text>
+                            </v-card>
+                        </v-col>
+                        <v-col cols="12" md="4">
                             <v-card class="info-card mb-4">
                                 <v-card-title>
                                     <v-icon left color="teal">mdi-palette</v-icon>
                                     Color Legend
                                 </v-card-title>
-                                <v-card-text class="d-flex flex-wrap">
-                                    <div v-for="(color, element) in atomColors" :key="element" class="mr-3 mb-2">
-                                        <span class="element-badge" :style="{backgroundColor: color}">{{ element }}</span>
-                                        {{ elementNames[element] || element }}
+                                <v-card-text>
+                                    <!-- Atom colors - shown when colorMapping is Atom -->
+                                    <div v-if="colorMapping === 'Atom'" class="d-flex flex-wrap">
+                                        <div v-for="(color, element) in atomColors" :key="element" class="mr-3 mb-2">
+                                            <span class="element-badge" :style="{backgroundColor: color}">{{ element }}</span>
+                                            {{ elementNames[element] || element }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- B-Factor gradient - shown when colorMapping is B-Factor -->
+                                    <div v-else-if="colorMapping === 'B-Factor'" class="b-factor-gradient">
+                                        <div class="d-flex align-center">
+                                            <div class="gradient-bar"></div>
+                                        </div>
+                                        <div class="d-flex justify-space-between mt-1">
+                                            <span>Low</span>
+                                            <span>Medium</span>
+                                            <span>High</span>
+                                        </div>
+                                        <p class="caption mt-2">Temperature factor (flexibility)</p>
+                                    </div>
+                                    
+                                    <!-- Residue colors - shown when colorMapping is Residue -->
+                                    <div v-else-if="colorMapping === 'Residue'" class="d-flex flex-wrap">
+                                        <div v-for="(color, index) in ['#33FF33', '#3333FF', '#FF3333', '#33FFFF', '#FF33FF']" :key="index" class="mr-3 mb-2">
+                                            <span class="element-badge" :style="{backgroundColor: color}">{{ index + 1 }}</span>
+                                            Residue Type {{ index + 1 }}
+                                        </div>
                                     </div>
                                 </v-card-text>
                             </v-card>
@@ -287,7 +363,19 @@
                     'S': 'Sulfur',
                     'P': 'Phosphorus',
                     'H': 'Hydrogen'
-                }
+                },
+                // Visualization options
+                visualStyle: 'Ball and Stick',
+                visualStyles: [
+                    'Ball and Stick',
+                    'Protein Ribbon'
+                ],
+                colorMapping: 'Atom',
+                colorMappings: [
+                    'Atom',
+                    'B-Factor',
+                    'Residue'
+                ]
             },
             mounted() {
                 // Make visualizations responsive on window resize
@@ -322,10 +410,10 @@
                     this.$nextTick(() => {
                         if (canResize && currentTopAtoms.length > 0) {
                             if (canvasId === 'topViewCanvas' || this.isFullscreen.top) {
-                                drawMoleculeTopView('topViewCanvas', currentTopAtoms, currentBondsTop);
+                                drawMoleculeTopView('topViewCanvas', currentTopAtoms, currentBondsTop, currentTopOptions);
                             }
                             if (canvasId === 'sideViewCanvas' || this.isFullscreen.side) {
-                                drawMoleculeSideView('sideViewCanvas', currentSideAtoms, currentBondsSide);
+                                drawMoleculeSideView('sideViewCanvas', currentSideAtoms, currentBondsSide, currentSideOptions);
                             }
                         }
                     });
@@ -338,12 +426,10 @@
                             this.pdbInfo = data.info;
                             this.pdbContent = data.content;
                             
-                            // Update visualizations
+                            // Update visualizations using current style/color settings
                             this.$nextTick(() => {
-                                // Use our simpler static visualizer functions
-                                createTopView(data.content, 'topViewCanvas');
-                                createSideView(data.content, 'sideViewCanvas');
-                                console.log('Visualization complete');
+                                this.updateVisualization();
+                                console.log('Example visualization complete');
                             });
                         })
                         .catch(error => {
@@ -354,6 +440,48 @@
                             this.loading = false;
                         });
                 },
+                updateVisualization() {
+                    // Only update if we have PDB content
+                    if (!this.pdbContent) return;
+                    
+                    console.log(`Updating visualization: Style=${this.visualStyle}, Color=${this.colorMapping}`);
+                    
+                    // Apply selected visualization style and color mapping
+                    this.$nextTick(() => {
+                        // In our 2D implementation, we always use the same visualization approach
+                        // but we can adjust parameters based on selected options
+                        
+                        // Update top view with selected options
+                        let bondThreshold = 3.0; // Default
+                        let atomSizeMultiplier = 1.0; // Default
+                        
+                        // Adjust parameters based on visual style
+                        if (this.visualStyle === 'Protein Ribbon') {
+                            // For ribbon style, show fewer bonds and larger atoms
+                            bondThreshold = 2.0;
+                            atomSizeMultiplier = 1.5;
+                        } else { // Ball and Stick
+                            bondThreshold = 3.0;
+                            atomSizeMultiplier = 1.0;
+                        }
+                        
+                        // Recalculate with new parameters
+                        createTopView(this.pdbContent, 'topViewCanvas', {
+                            bondThreshold: bondThreshold,
+                            atomSizeMultiplier: atomSizeMultiplier,
+                            colorMapping: this.colorMapping,
+                            visualStyle: this.visualStyle
+                        });
+                        
+                        createSideView(this.pdbContent, 'sideViewCanvas', {
+                            bondThreshold: bondThreshold,
+                            atomSizeMultiplier: atomSizeMultiplier,
+                            colorMapping: this.colorMapping,
+                            visualStyle: this.visualStyle
+                        });
+                    });
+                },
+                
                 uploadPDB() {
                     if (!this.fileInput) {
                         this.uploadError = 'Please select a file to upload';
@@ -387,9 +515,8 @@
                         
                         // Update visualizations
                         this.$nextTick(() => {
-                            // Use our visualizer functions
-                            createTopView(data.content, 'topViewCanvas');
-                            createSideView(data.content, 'sideViewCanvas');
+                            // Use our visualizer functions with current style/color settings
+                            this.updateVisualization();
                             this.showUploadDialog = false;
                             console.log('Visualization of uploaded file complete');
                         });
