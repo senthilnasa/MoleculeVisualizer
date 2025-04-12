@@ -106,8 +106,10 @@ class BallAndStickVisualizer(BaseVisualizer):
             else:
                 state.hover_info = ""
         
-        # Set up interaction
-        renderWindow.GetInteractor().AddObserver(vtkCommand.MouseMoveEvent, handle_mouse_move)
+        # Set up interaction (if we have an interactor)
+        interactor = renderWindow.GetInteractor()
+        if interactor is not None:
+            interactor.AddObserver(vtkCommand.MouseMoveEvent, handle_mouse_move)
         
         # Reset camera
         renderer.ResetCamera()

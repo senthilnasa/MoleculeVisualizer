@@ -1,0 +1,64 @@
+chunk-vendors.c3c88821.js:1 
+            
+            
+           POST https://f0b2af82-ee67-46f4-b7b9-8dc52aa4be4c-00-18r960el4ailg.riker.replit.dev/paraview/ 405 (Method Not Allowed)
+e.start @ chunk-vendors.c3c88821.js:1
+Ye.e.connect @ chunk-vendors.c3c88821.js:1
+(anonymous) @ chunk-vendors.c3c88821.js:1
+Le.e.connect @ chunk-vendors.c3c88821.js:1
+Ht @ app.9201d5ad.js:1
+3865 @ app.9201d5ad.js:1
+n @ app.9201d5ad.js:1
+(anonymous) @ app.9201d5ad.js:1
+n.O @ app.9201d5ad.js:1
+(anonymous) @ app.9201d5ad.js:1
+(anonymous) @ app.9201d5ad.js:1
+app.9201d5ad.js:1 Vue.use(trame_vuetify, {}) - true - install(true)
+app.9201d5ad.js:1 {code: -32001, message: 'Exception raised', data: {…}}
+overrideMethod @ hook.js:608
+console.error @ app.9201d5ad.js:1
+vn @ vue.global.js:11
+pn @ vue.global.js:11
+fn @ vue.global.js:11
+(anonymous) @ vue.global.js:11
+Promise.catch
+dn @ vue.global.js:11
+r @ vue.global.js:11
+dn @ vue.global.js:11
+t.$emit @ vue.global.js:11
+click @ trame-vuetify.umd.min.js:145
+dn @ vue.global.js:11
+r @ vue.global.js:11
+i._wrapper @ vue.global.js:11
+app.9201d5ad.js:1 {code: -32001, message: 'Exception raised', data: {…}}
+overrideMethod @ hook.js:608
+console.error @ app.9201d5ad.js:1
+vn @ vue.global.js:11
+pn @ vue.global.js:11
+fn @ vue.global.js:11
+(anonymous) @ vue.global.js:11
+Promise.catch
+dn @ vue.global.js:11
+r @ vue.global.js:11
+dn @ vue.global.js:11
+t.$emit @ vue.global.js:11
+click @ trame-vuetify.umd.min.js:145
+dn @ vue.global.js:11
+r @ vue.global.js:11
+i._wrapper @ vue.global.js:11
+app.9201d5ad.js:1 {code: -32001, message: 'Exception raised', data: {…}}code: -32001data: exception: "AttributeError(\"'NoneType' object has no attribute 'AddObserver'\")"method: "trame.trigger"trace: "Traceback (most recent call last):\n  File \"/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/wslink/protocol.py\", line 327, in onCompleteMessage\n    results = await results\n              ^^^^^^^^^^^^^\n  File \"/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/trame_server/protocol.py\", line 212, in trigger\n    result = fn(*args, **kwargs)\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/trame_server/controller.py\", line 351, in __call__\n    results = [_safe_call(f, *args, **kwargs) for f in copy_list]\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/trame_server/controller.py\", line 351, in <listcomp>\n    results = [_safe_call(f, *args, **kwargs) for f in copy_list]\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/trame_server/controller.py\", line 15, in _safe_call\n    else f(*args, **kwargs)\n         ^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/workspace/app.py\", line 102, in load_example\n    update_visualization()\n  File \"/home/runner/workspace/app.py\", line 88, in update_visualization\n    visualizer.create_visualization(\n  File \"/home/runner/workspace/visualizers/ball_and_stick.py\", line 110, in create_visualization\n    renderWindow.GetInteractor().AddObserver(vtkCommand.MouseMoveEvent, handle_mouse_move)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'AddObserver'\n"[[Prototype]]: Objectmessage: "Exception raised"[[Prototype]]: Object
+overrideMethod @ hook.js:608
+console.error @ app.9201d5ad.js:1
+vn @ vue.global.js:11
+pn @ vue.global.js:11
+fn @ vue.global.js:11
+(anonymous) @ vue.global.js:11
+Promise.catch
+dn @ vue.global.js:11
+r @ vue.global.js:11
+dn @ vue.global.js:11
+t.$emit @ vue.global.js:11
+click @ trame-vuetify.umd.min.js:145
+dn @ vue.global.js:11
+r @ vue.global.js:11
+i._wrapper @ vue.global.js:11
