@@ -1,4 +1,5 @@
 import os
+import io
 from flask import Flask, send_from_directory, request, jsonify, render_template, send_file
 
 # Initialize Flask app
@@ -56,6 +57,41 @@ def load_example():
         })
     else:
         return jsonify({"error": f"Example file not found: {example_path}"}), 404
+
+@app.route('/upload_pdb', methods=['POST'])
+def upload_pdb():
+    """Handle PDB file upload"""
+    # Check if request has a file
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+    
+    file = request.files['file']
+    
+    # If user doesn't select a file
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    
+    # Check if file is a PDB
+    if not file.filename.lower().endswith('.pdb'):
+        return jsonify({"error": "Not a PDB file (must end with .pdb)"}), 400
+    
+    # Read the file content
+    pdb_content = file.read().decode('utf-8')
+    
+    # Validate the file has atom entries
+    if not 'ATOM' in pdb_content and not 'HETATM' in pdb_content:
+        return jsonify({"error": "Invalid PDB file format (no ATOM or HETATM entries)"}), 400
+    
+    # Parse PDB info
+    info = parse_pdb_info(pdb_content)
+    info["filename"] = file.filename
+    
+    print(f"Uploaded PDB with {info['atoms']} atoms, {info['residues']} residues, {info['chains']} chains")
+    
+    return jsonify({
+        "info": info,
+        "content": pdb_content
+    })
 
 @app.route('/static/<path:path>')
 def send_static(path):
