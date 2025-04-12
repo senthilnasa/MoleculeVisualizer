@@ -5,6 +5,9 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "numpy>=2.2.4",
+    "trame-client>=3.7.1",
     "trame>=3.8.2",
     "vtk>=9.4.2",
+    "trame-vuetify>=3.0.0",
+    "trame-vtk>=2.8.15",
 ]

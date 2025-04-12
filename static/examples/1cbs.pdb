@@ -1,0 +1,70 @@
+HEADER    HYDROLASE                               13-JUN-96   1CBS              
+TITLE     CELLULAR RETINOIC-ACID-BINDING PROTEIN TYPE II IN                       
+TITLE    2 COMPLEX WITH RETINOIC ACID                                             
+COMPND    MOL_ID: 1;                                                               
+COMPND   2 MOLECULE: CELLULAR RETINOIC-ACID-BINDING PROTEIN TYPE II;              
+COMPND   3 CHAIN: NULL;                                                           
+COMPND   4 SYNONYM: CRABP-II;                                                      
+COMPND   5 EC: 3.1.1.3;                                                            
+COMPND   6 ENGINEERED: YES                                                         
+SOURCE    MOL_ID: 1;                                                               
+SOURCE   2 ORGANISM_SCIENTIFIC: HOMO SAPIENS;                                     
+SOURCE   3 ORGANISM_COMMON: HUMAN;                                                
+SOURCE   4 ORGANISM_TAXID: 9606;                                                  
+SOURCE   5 TISSUE: LIVER;                                                          
+SOURCE   6 CELLULAR_LOCATION: CYTOPLASM;                                           
+SOURCE   7 EXPRESSION_SYSTEM: ESCHERICHIA COLI;                                    
+SOURCE   8 EXPRESSION_SYSTEM_TAXID: 562                                            
+KEYWDS    BETA-BARREL, ALL-TRANS RETINOIC ACID, VITAMIN A METABOLITE              
+EXPDTA    X-RAY DIFFRACTION                                                        
+AUTHOR    D.CHEN,J.P.NOLLEVAUX,A.V.ANDREIKIEV,E.N.BAKER,A.LESK                   
+REVDAT   3   24-FEB-09 1CBS    1       VERSN                                       
+REVDAT   2   01-APR-03 1CBS    1       JRNL                                        
+REVDAT   1   29-APR-97 1CBS    0                                                   
+JRNL        AUTH   D.CHEN,J.C.NOLLEVAUX,A.V.ANDREIEV,E.N.BAKER,A.M.LESK           
+JRNL        TITL   STRUCTURE OF A MUTANT CELLULAR RETINOIC-ACID-BINDING           
+JRNL        TITL 2 PROTEIN II (THR 54 TO VAL) AT 1.8 ANGSTROMS                    
+JRNL        TITL 3 RESOLUTION.                                                     
+JRNL        REF    RES.FOLD & DES.                        V.   4    55 1997        
+JRNL        REFN                   ESSN 1744-1617                                  
+JRNL        PMID   10423015                                                        
+JRNL        DOI    10.1016/S1359-0278(97)00016-X                                   
+HELIX    1  H1 GLY    12  LYS    26  1                                  15          
+HELIX    2  H2 SER    55  VAL    76  1                                  22          
+HELIX    3  H3 GLU   118  TRP   131  1                                  14          
+SHEET    1  S1 3 ILE    41  THR    44  0                                            
+SHEET    2  S1 3 VAL    45  ALA    49  1  O  THR    44   N  ALA    49              
+SHEET    3  S1 3 THR    54  LYS    54  1  O  ALA    49   N  THR    54              
+SHEET    1  S2 3 MET    79  TYR    83  0                                            
+SHEET    2  S2 3 GLY    84  ILE    87  1  O  TYR    83   N  GLY    84              
+SHEET    3  S2 3 ASP    89  GLN    93  1  O  ILE    87   N  ASP    89              
+SHEET    1  S3 3 PHE    99  GLY   103  0                                            
+SHEET    2  S3 3 LYS   105  PHE   107  1  O  GLY   103   N  PHE   107              
+SHEET    3  S3 3 GLU   110  LEU   113  1  O  PHE   107   N  GLU   110              
+CRYST1   94.550   70.310   60.880  90.00  90.00  90.00 P 21 21 21    4              
+ATOM      1  N   PRO A   6      37.610   1.340  41.010  1.00 38.11           N      
+ATOM      2  CA  PRO A   6      37.380   2.310  39.910  1.00 28.06           C      
+ATOM      3  C   PRO A   6      38.680   2.970  39.450  1.00 24.95           C      
+ATOM      4  O   PRO A   6      39.720   2.330  39.410  1.00 21.24           O      
+ATOM      5  CB  PRO A   6      36.860   1.450  38.740  1.00 23.54           C      
+ATOM      6  CG  PRO A   6      35.960   0.490  39.430  1.00 28.21           C      
+ATOM      7  CD  PRO A   6      36.410   0.270  40.840  1.00 27.45           C      
+ATOM      8  N   ASN A   7      38.590   4.220  39.050  1.00 17.26           N      
+ATOM      9  CA  ASN A   7      39.750   4.950  38.580  1.00 13.53           C      
+ATOM     10  C   ASN A   7      40.250   4.380  37.250  1.00 15.44           C      
+ATOM     11  O   ASN A   7      39.500   4.050  36.330  1.00 20.20           O      
+ATOM     12  CB  ASN A   7      39.500   6.450  38.440  1.00 18.34           C      
+ATOM     13  CG  ASN A   7      40.710   7.260  38.050  1.00 28.43           C      
+ATOM     14  OD1 ASN A   7      41.810   6.710  37.950  1.00 27.57           O      
+ATOM     15  ND2 ASN A   7      40.530   8.560  37.860  1.00 31.86           N      
+ATOM     16  N   PHE A   8      41.570   4.290  37.130  1.00 11.35           N      
+ATOM     17  CA  PHE A   8      42.170   3.730  35.910  1.00 12.05           C      
+ATOM     18  C   PHE A   8      42.690   4.840  35.000  1.00 11.08           C      
+ATOM     19  O   PHE A   8      43.440   5.690  35.440  1.00 12.48           O      
+ATOM     20  CB  PHE A   8      43.300   2.750  36.240  1.00 10.54           C      
+ATOM     21  CG  PHE A   8      43.970   2.210  35.020  1.00 13.73           C      
+ATOM     22  CD1 PHE A   8      44.980   2.910  34.370  1.00 17.38           C      
+ATOM     23  CD2 PHE A   8      43.550   0.990  34.490  1.00 15.86           C      
+ATOM     24  CE1 PHE A   8      45.570   2.390  33.210  1.00 13.17           C      
+ATOM     25  CE2 PHE A   8      44.140   0.460  33.330  1.00 11.06           C      
+ATOM     26  CZ  PHE A   8      45.140   1.170  32.690  1.00 16.25           C
