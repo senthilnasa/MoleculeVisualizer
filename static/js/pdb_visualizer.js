@@ -8,8 +8,15 @@
 
 class PDB2DVisualizer {
     constructor(canvasId) {
+        console.log('Initializing PDB2DVisualizer for', canvasId);
         this.canvas = document.getElementById(canvasId);
+        console.log('Canvas element:', this.canvas);
+        if (!this.canvas) {
+            console.error('Canvas element not found:', canvasId);
+            return;
+        }
         this.ctx = this.canvas.getContext('2d');
+        console.log('Canvas context:', this.ctx);
         this.atomColors = {
             'C': '#909090', // Carbon - gray
             'N': '#3050F8', // Nitrogen - blue
@@ -44,6 +51,7 @@ class PDB2DVisualizer {
     }
     
     parsePDB(pdbContent) {
+        console.log('Parsing PDB data...');
         this.reset();
         
         const lines = pdbContent.split('\n');
@@ -116,10 +124,14 @@ class PDB2DVisualizer {
     }
     
     render(viewType = 'top') {
+        console.log(`Rendering ${viewType} view with ${this.atoms.length} atoms`);
+        
         if (this.atoms.length === 0) {
             console.error('No atoms to render');
             return;
         }
+        
+        console.log('Canvas dimensions:', this.canvas.width, this.canvas.height);
         
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

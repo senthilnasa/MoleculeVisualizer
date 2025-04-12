@@ -14,7 +14,7 @@
         canvas { width: 100%; height: 300px; border-radius: 4px; }
     </style>
     <!-- Load our 2D PDB visualizer -->
-    <script src="/static/js/pdb_visualizer.js"></script>
+    <script src="/static/js/simple_visualizer.js"></script>
 </head>
 <body>
     <div id="app">
@@ -113,16 +113,10 @@
                             
                             // Update visualizations
                             this.$nextTick(() => {
-                                // Create visualizers only after DOM is updated
-                                this.topVisualizer = new PDB2DVisualizer('topViewCanvas');
-                                this.sideVisualizer = new PDB2DVisualizer('sideViewCanvas');
-                                
-                                // Now parse and render the PDB data
-                                this.topVisualizer.parsePDB(data.content);
-                                this.topVisualizer.renderTopView();
-                                
-                                this.sideVisualizer.parsePDB(data.content);
-                                this.sideVisualizer.renderSideView();
+                                // Use our simpler static visualizer functions
+                                createTopView(data.content, 'topViewCanvas');
+                                createSideView(data.content, 'sideViewCanvas');
+                                console.log('Visualization complete');
                             });
                         })
                         .catch(error => {
