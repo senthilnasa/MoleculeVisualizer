@@ -4,14 +4,7 @@ from trame.widgets import vuetify, html
 
 import os
 import tempfile
-
-from ui.drawer import create_drawer
-from ui.viewer import create_viewer
-from visualizers.ball_and_stick import BallAndStickVisualizer
-from visualizers.protein_ribbon import ProteinRibbonVisualizer
-from colormappers.atom import AtomColorMapper
-from colormappers.bfactor import BFactorColorMapper
-from colormappers.residue import ResidueColorMapper
+import base64
 
 # -----------------------------------------------------------------------------
 # Trame setup
@@ -23,24 +16,15 @@ state, ctrl = server.state, server.controller
 
 # Initial state
 state.trame__title = "Molecule Visualizer"
-state.visualization_style = "ball_and_stick"
-state.color_mapping = "atom"
+state.visualization_style = "text_view"
 state.file_content = None
-state.hover_info = ""
+state.pdb_content = ""
 state.active_pdb_file = None
-state.view_ball_and_stick = "<div>Ball and Stick view will appear here</div>"
-state.view_protein_ribbon = "<div>Protein Ribbon view will appear here</div>"
-
-# Available visualization styles and color mappers
-visualization_styles = {
-    "ball_and_stick": BallAndStickVisualizer(),
-    "protein_ribbon": ProteinRibbonVisualizer(),
-}
-
-color_mappers = {
-    "atom": AtomColorMapper(),
-    "bfactor": BFactorColorMapper(),
-    "residue": ResidueColorMapper(),
+state.file_name = ""
+state.molecule_info = {
+    "atoms": 0,
+    "residues": 0,
+    "chains": 0
 }
 
 # -----------------------------------------------------------------------------
@@ -49,7 +33,7 @@ color_mappers = {
 
 @ctrl.add("on_file_upload")
 def on_file_upload(file_content=None, **kwargs):
-    """Handle file upload and create visualization"""
+    """Handle file upload and parse PDB content"""
     if not file_content:
         return
     
@@ -59,38 +43,42 @@ def on_file_upload(file_content=None, **kwargs):
     os.close(fd)
     
     state.active_pdb_file = filename
-    update_visualization()
-
-@ctrl.add("update_visualization_style")
-def update_visualization_style(style=None):
-    """Update visualization style"""
-    if style:
-        state.visualization_style = style
-        update_visualization()
-
-@ctrl.add("update_color_mapping")
-def update_color_mapping(mapping=None):
-    """Update color mapping"""
-    if mapping:
-        state.color_mapping = mapping
-        update_visualization()
-
-def update_visualization():
-    """Update the visualization based on current state"""
-    if not state.active_pdb_file:
-        return
+    state.file_name = os.path.basename(filename)
     
-    # Get the current visualizer and color mapper
-    visualizer = visualization_styles[state.visualization_style]
-    color_mapper = color_mappers[state.color_mapping]
+    # Read the PDB file
+    with open(filename, 'r') as f:
+        pdb_content = f.read()
     
-    # Create the visualization
-    visualizer.create_visualization(
-        state.active_pdb_file, 
-        color_mapper=color_mapper,
-        state=state,
-        ctrl=ctrl
-    )
+    # Update state
+    state.pdb_content = pdb_content
+    
+    # Parse basic PDB info
+    parse_pdb_info(pdb_content)
+
+def parse_pdb_info(pdb_content):
+    """Parse basic information from PDB file"""
+    lines = pdb_content.splitlines()
+    
+    # Count atoms, residues, and chains
+    atoms = 0
+    residues = set()
+    chains = set()
+    
+    for line in lines:
+        if line.startswith("ATOM") or line.startswith("HETATM"):
+            atoms += 1
+            residue_id = line[22:27].strip()  # residue sequence number and insertion code
+            chain_id = line[21]  # chain identifier
+            
+            residues.add(residue_id + chain_id)
+            chains.add(chain_id)
+    
+    # Update molecule info
+    state.molecule_info = {
+        "atoms": atoms,
+        "residues": len(residues),
+        "chains": len(chains)
+    }
 
 # Load default PDB file if no file is uploaded
 @ctrl.add("load_example")
@@ -98,8 +86,15 @@ def load_example():
     """Load example PDB file"""
     example_path = os.path.join(os.path.dirname(__file__), "static/examples/1cbs.pdb")
     if os.path.exists(example_path):
+        with open(example_path, 'r') as f:
+            file_content = f.read()
+        
         state.active_pdb_file = example_path
-        update_visualization()
+        state.file_name = "1cbs.pdb"
+        state.pdb_content = file_content
+        
+        # Parse basic PDB info
+        parse_pdb_info(file_content)
 
 # -----------------------------------------------------------------------------
 # UI setup
@@ -116,27 +111,90 @@ with SinglePageLayout(server) as layout:
         width=300,
         v_model=("drawer_open", True),
     ):
-        # Create drawer with controls
-        create_drawer(
-            None,
-            visualization_styles=list(visualization_styles.keys()),
-            color_mappings=list(color_mappers.keys()),
-            state=state,
-            ctrl=ctrl,
-        )
+        # Drawer controls
+        with vuetify.VContainer(classes="fill-height"):
+            with vuetify.VRow(classes="mb-4"):
+                vuetify.VCard(
+                    classes="mx-auto",
+                    elevation=2,
+                    outlined=True,
+                    width="100%",
+                    children=[
+                        vuetify.VCardTitle("Upload PDB File"),
+                        vuetify.VCardText(
+                            children=[
+                                vuetify.VFileInput(
+                                    label="Select PDB file",
+                                    prepend_icon="mdi-file-document",
+                                    on_change=("on_file_upload", "(value) => value"),
+                                ),
+                                vuetify.VBtn(
+                                    "Load Example (1cbs.pdb)",
+                                    color="primary",
+                                    classes="mt-2",
+                                    block=True,
+                                    on_click=load_example,
+                                ),
+                            ]
+                        ),
+                    ],
+                )
+            
+            # Show molecule info
+            if_template = "molecule_info.atoms > 0"
+            with vuetify.VRow(classes="mb-4", v_if=(if_template)):
+                vuetify.VCard(
+                    classes="mx-auto",
+                    elevation=2,
+                    outlined=True,
+                    width="100%",
+                    children=[
+                        vuetify.VCardTitle("Molecule Information"),
+                        vuetify.VCardText(
+                            children=[
+                                html.Div(children=[
+                                    html.P("File: {{ file_name }}"),
+                                    html.P("Atoms: {{ molecule_info.atoms }}"),
+                                    html.P("Residues: {{ molecule_info.residues }}"),
+                                    html.P("Chains: {{ molecule_info.chains }}"),
+                                ]),
+                            ]
+                        ),
+                    ],
+                )
     
     # Create main content
     with vuetify.VMain():
-        with vuetify.VContainer(fluid=True, classes="pa-0 fill-height"):
-            create_viewer(state, ctrl)
+        with vuetify.VContainer(fluid=True, classes="pa-4 fill-height"):
+            # Welcome message when no file is loaded
+            with html.Div(
+                v_if=("!active_pdb_file"),
+                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 80%;"
+            ):
+                html.H3("Welcome to Molecule Visualizer")
+                html.P("Upload a PDB file or load the example to get started")
+                vuetify.VIcon("mdi-molecule", size="100", color="primary")
+                
+            # PDB content viewer
+            with html.Div(v_if=("active_pdb_file"), style="height: 100%; width: 100%;"):
+                with vuetify.VCard(height="100%", outlined=True):
+                    vuetify.VCardTitle("{{ file_name }}")
+                    with vuetify.VCardText(style="height: calc(100% - 60px);"):
+                        vuetify.VTextarea(
+                            v_model=("pdb_content", ""), 
+                            readonly=True,
+                            filled=True,
+                            auto_grow=False,
+                            rows=20,
+                            style="font-family: monospace; height: 100%; width: 100%;"
+                        )
     
     # Add footer
     with vuetify.VFooter(app=True, height=36, color="grey lighten-4"):
         with html.Div(
             style="width: 100%; text-align: center; color: gray; font-size: 0.8em;"
         ):
-            html.Span("Molecule Visualizer - Powered by Trame and VTK")
-            html.Span("Hover Info: {{ hover_info }}", style="margin-left: 20px;")
+            html.Span("Molecule Visualizer - Powered by Trame")
 
 # -----------------------------------------------------------------------------
 # Main
