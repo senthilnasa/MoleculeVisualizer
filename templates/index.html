@@ -9,7 +9,12 @@
     <style>
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         pre { white-space: pre-wrap; word-wrap: break-word; max-height: 400px; overflow-y: auto; }
+        .visualization-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-bottom: 20px; }
+        .visualization-card { flex: 1; min-width: 300px; max-width: 500px; }
+        canvas { width: 100%; height: 300px; border-radius: 4px; }
     </style>
+    <!-- Load our 2D PDB visualizer -->
+    <script src="/static/js/pdb_visualizer.js"></script>
 </head>
 <body>
     <div id="app">
@@ -39,12 +44,33 @@
                         </v-card-text>
                     </v-card>
 
-                    <v-card v-if="pdbContent">
-                        <v-card-title>PDB Content</v-card-title>
-                        <v-card-text>
-                            <pre>{{ pdbContent }}</pre>
-                        </v-card-text>
-                    </v-card>
+                    <!-- 2D Visualizations -->
+                    <div v-if="pdbContent" class="visualization-container">
+                        <v-card class="visualization-card">
+                            <v-card-title>Top View</v-card-title>
+                            <v-card-text>
+                                <canvas id="topViewCanvas" width="500" height="300"></canvas>
+                            </v-card-text>
+                        </v-card>
+                        
+                        <v-card class="visualization-card">
+                            <v-card-title>Side View</v-card-title>
+                            <v-card-text>
+                                <canvas id="sideViewCanvas" width="500" height="300"></canvas>
+                            </v-card-text>
+                        </v-card>
+                    </div>
+
+                    <v-expansion-panels v-if="pdbContent">
+                        <v-expansion-panel>
+                            <v-expansion-panel-header>
+                                PDB Content
+                            </v-expansion-panel-header>
+                            <v-expansion-panel-content>
+                                <pre>{{ pdbContent }}</pre>
+                            </v-expansion-panel-content>
+                        </v-expansion-panel>
+                    </v-expansion-panels>
                 </v-container>
             </v-main>
 
@@ -59,6 +85,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <script>
+        // Initialize our Vue app
         new Vue({
             el: '#app',
             vuetify: new Vuetify(),
@@ -69,7 +96,14 @@
                     residues: 0,
                     chains: 0
                 },
-                pdbContent: ''
+                pdbContent: '',
+                topVisualizer: null,
+                sideVisualizer: null
+            },
+            mounted() {
+                // Initialize the visualizers (they'll be updated when PDB data is loaded)
+                this.topVisualizer = new PDB2DVisualizer('topViewCanvas');
+                this.sideVisualizer = new PDB2DVisualizer('sideViewCanvas');
             },
             methods: {
                 loadExamplePDB() {
@@ -78,6 +112,17 @@
                         .then(data => {
                             this.pdbInfo = data.info;
                             this.pdbContent = data.content;
+                            
+                            // Update visualizations
+                            this.$nextTick(() => {
+                                if (this.topVisualizer && this.sideVisualizer) {
+                                    this.topVisualizer.parsePDB(data.content);
+                                    this.topVisualizer.renderTopView();
+                                    
+                                    this.sideVisualizer.parsePDB(data.content);
+                                    this.sideVisualizer.renderSideView();
+                                }
+                            });
                         })
                         .catch(error => {
                             console.error('Error loading example:', error);
