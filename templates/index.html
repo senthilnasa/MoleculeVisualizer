@@ -101,9 +101,7 @@
                 sideVisualizer: null
             },
             mounted() {
-                // Initialize the visualizers (they'll be updated when PDB data is loaded)
-                this.topVisualizer = new PDB2DVisualizer('topViewCanvas');
-                this.sideVisualizer = new PDB2DVisualizer('sideViewCanvas');
+                // Visualizers will be initialized after data is loaded
             },
             methods: {
                 loadExamplePDB() {
@@ -115,13 +113,16 @@
                             
                             // Update visualizations
                             this.$nextTick(() => {
-                                if (this.topVisualizer && this.sideVisualizer) {
-                                    this.topVisualizer.parsePDB(data.content);
-                                    this.topVisualizer.renderTopView();
-                                    
-                                    this.sideVisualizer.parsePDB(data.content);
-                                    this.sideVisualizer.renderSideView();
-                                }
+                                // Create visualizers only after DOM is updated
+                                this.topVisualizer = new PDB2DVisualizer('topViewCanvas');
+                                this.sideVisualizer = new PDB2DVisualizer('sideViewCanvas');
+                                
+                                // Now parse and render the PDB data
+                                this.topVisualizer.parsePDB(data.content);
+                                this.topVisualizer.renderTopView();
+                                
+                                this.sideVisualizer.parsePDB(data.content);
+                                this.sideVisualizer.renderSideView();
                             });
                         })
                         .catch(error => {
