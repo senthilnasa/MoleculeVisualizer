@@ -1,97 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Molecular Visualization Tool</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <title>Simple PDB Viewer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <style>
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        pre { white-space: pre-wrap; word-wrap: break-word; max-height: 400px; overflow-y: auto; }
+    </style>
 </head>
 <body>
     <div id="app">
         <v-app>
             <v-app-bar app color="primary" dark>
-                <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-                <v-toolbar-title>Molecular Visualization Tool</v-toolbar-title>
+                <v-toolbar-title>Simple PDB Viewer</v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn icon @click="resetCamera">
-                    <v-icon>mdi-camera-outline</v-icon>
-                </v-btn>
+                <v-btn text @click="loadExamplePDB">Load Example PDB</v-btn>
             </v-app-bar>
 
-            <v-navigation-drawer v-model="drawer" app clipped>
-                <v-list dense>
-                    <v-list-item>
-                        <v-list-item-content>
-                            <v-list-item-title class="title">
-                                Controls
-                            </v-list-item-title>
-                        </v-list-item-content>
-                    </v-list-item>
-                </v-list>
-
-                <v-divider></v-divider>
-
+            <v-main>
                 <v-container>
-                    <v-select
-                        v-model="viewStyle"
-                        :items="viewStyleOptions"
-                        label="Visualization Style"
-                        outlined
-                        dense
-                        @change="updateVisualization"
-                    ></v-select>
-
-                    <v-select
-                        v-model="colorMapping"
-                        :items="colorMappingOptions"
-                        label="Color Mapping"
-                        outlined
-                        dense
-                        @change="updateVisualization"
-                    ></v-select>
-
-                    <v-file-input
-                        label="Upload PDB File"
-                        outlined
-                        dense
-                        accept=".pdb"
-                        @change="handleFileUpload"
-                    ></v-file-input>
-
-                    <v-select
-                        v-if="pdbFiles.length > 0"
-                        v-model="activeFile"
-                        :items="pdbFiles"
-                        item-text="name"
-                        item-value="path"
-                        label="Select PDB File"
-                        outlined
-                        dense
-                        @change="updateActiveFile"
-                    ></v-select>
-
-                    <v-card outlined class="mt-4">
-                        <v-card-title class="subtitle-1">Molecule Info</v-card-title>
+                    <v-card v-if="pdbInfo.filename" class="mb-4">
+                        <v-card-title>PDB Information: {{ pdbInfo.filename }}</v-card-title>
                         <v-card-text>
-                            <div>{{ hoverInfo }}</div>
+                            <p>Atoms: {{ pdbInfo.atoms }}</p>
+                            <p>Residues: {{ pdbInfo.residues }}</p>
+                            <p>Chains: {{ pdbInfo.chains }}</p>
+                        </v-card-text>
+                    </v-card>
+                    
+                    <v-card v-if="!pdbInfo.filename" class="mb-4 text-center">
+                        <v-card-title class="justify-center">Welcome to PDB Viewer</v-card-title>
+                        <v-card-text>
+                            <p>Click "Load Example PDB" to see a protein structure file</p>
+                            <v-icon x-large color="primary">mdi-molecule</v-icon>
+                        </v-card-text>
+                    </v-card>
+
+                    <v-card v-if="pdbContent">
+                        <v-card-title>PDB Content</v-card-title>
+                        <v-card-text>
+                            <pre>{{ pdbContent }}</pre>
                         </v-card-text>
                     </v-card>
                 </v-container>
-            </v-navigation-drawer>
-
-            <v-main>
-                <div id="vtk-container"></div>
             </v-main>
 
             <v-footer app>
-                <v-container class="pa-2">
-                    <div class="text-center text-caption grey--text">
-                        Molecular Visualization Tool - Powered by Trame & VTK
-                    </div>
-                </v-container>
+                <div class="text-center w-100">
+                    PDB Viewer - Simplified Version
+                </div>
             </v-footer>
         </v-app>
     </div>
@@ -103,68 +63,26 @@
             el: '#app',
             vuetify: new Vuetify(),
             data: {
-                drawer: true,
-                viewStyle: 'ball_stick',
-                viewStyleOptions: [
-                    { text: 'Ball and Stick', value: 'ball_stick' },
-                    { text: 'Protein Ribbon', value: 'ribbon' }
-                ],
-                colorMapping: 'atom',
-                colorMappingOptions: [
-                    { text: 'Atom', value: 'atom' },
-                    { text: 'B-Factor', value: 'bfactor' },
-                    { text: 'Residue', value: 'residue' }
-                ],
-                hoverInfo: 'Hover over atoms to see details',
-                pdbFiles: [],
-                activeFile: null
+                pdbInfo: {
+                    filename: '',
+                    atoms: 0,
+                    residues: 0,
+                    chains: 0
+                },
+                pdbContent: ''
             },
             methods: {
-                updateVisualization() {
-                    // This would normally update the visualization,
-                    // but in this case it's handled by the Python backend
-                    fetch('/api/update-visualization', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            viewStyle: this.viewStyle,
-                            colorMapping: this.colorMapping
+                loadExamplePDB() {
+                    fetch('/load_example')
+                        .then(response => response.json())
+                        .then(data => {
+                            this.pdbInfo = data.info;
+                            this.pdbContent = data.content;
                         })
-                    });
-                },
-                handleFileUpload(file) {
-                    if (!file) return;
-                    
-                    let formData = new FormData();
-                    formData.append('file', file);
-                    
-                    fetch('/api/upload-pdb', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        this.pdbFiles = data.pdbFiles;
-                        this.activeFile = data.activeFile;
-                    });
-                },
-                updateActiveFile() {
-                    fetch('/api/set-active-file', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            activeFile: this.activeFile
-                        })
-                    });
-                },
-                resetCamera() {
-                    fetch('/api/reset-camera', {
-                        method: 'POST'
-                    });
+                        .catch(error => {
+                            console.error('Error loading example:', error);
+                            alert('Failed to load example PDB file');
+                        });
                 }
             }
         });

@@ -65,7 +65,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python simple_app.py"
+args = "python static_pdb_viewer.py"
 waitForPort = 5000
 
 [deployment]

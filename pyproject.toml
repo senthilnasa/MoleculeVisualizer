@@ -10,4 +10,5 @@ dependencies = [
     "vtk>=9.4.2",
     "trame-vuetify>=3.0.0",
     "trame-vtk>=2.8.15",
+    "flask>=3.1.0",
 ]
