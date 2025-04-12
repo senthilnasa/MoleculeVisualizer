@@ -1,10 +1,8 @@
+import os
+import tempfile
 from trame.app import get_server
 from trame.ui.vuetify import SinglePageLayout
 from trame.widgets import vuetify, html
-
-import os
-import tempfile
-import base64
 
 # -----------------------------------------------------------------------------
 # Trame setup
