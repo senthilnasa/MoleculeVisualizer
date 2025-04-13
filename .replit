@@ -23,6 +23,10 @@ args = "Molecule Visualizer Server"
 task = "workflow.run"
 args = "Simple PDB Viewer"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Molecular Structure Viewer"
+
 [[workflows.workflow]]
 name = "Molecular Visualization Server"
 author = "agent"
@@ -55,6 +59,21 @@ waitForPort = 5000
 
 [[workflows.workflow]]
 name = "Simple PDB Viewer"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python static_pdb_viewer.py"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Molecular Structure Viewer"
 author = "agent"
 
 [workflows.workflow.metadata]
