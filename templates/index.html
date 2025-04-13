@@ -520,14 +520,24 @@
                 resetView() {
                     // Reset the camera position to the default view
                     this.$nextTick(() => {
-                        if (window.hasOwnProperty('positionCameraForMolecule') && 
-                            window.hasOwnProperty('camera') && 
+                        if (window.hasOwnProperty('camera') && 
                             window.hasOwnProperty('controls')) {
                             
                             const container = document.getElementById('moleculeContainer');
                             if (container) {
-                                // Position the camera to see the full molecule
+                                // Reset controls to default state
                                 controls.reset();
+                                
+                                // Set camera position to see the full molecule
+                                camera.position.set(0, 0, 100);
+                                camera.lookAt(0, 0, 0);
+                                camera.updateProjectionMatrix();
+                                controls.update();
+                                
+                                // Force a render update
+                                if (window.hasOwnProperty('renderer')) {
+                                    renderer.render(scene, camera);
+                                }
                             }
                         }
                     });
