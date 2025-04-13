@@ -208,16 +208,27 @@
                     </v-row>
                     
                     <v-card v-if="!pdbInfo.filename" class="mb-4 text-center">
-                        <v-card-title class="justify-center">Welcome to Molecular Visualizer</v-card-title>
+                        <v-card-title class="justify-center display-1 font-weight-bold teal--text">
+                            Welcome to Molecular Visualizer
+                        </v-card-title>
+                        <v-card-subtitle class="subtitle-1 font-weight-medium">
+                            Muskan Aneja's Capstone Project
+                        </v-card-subtitle>
                         <v-card-text>
-                            <p>Visualize protein structures from Protein Data Bank (PDB) files</p>
-                            <v-icon x-large color="teal">mdi-molecule</v-icon>
-                            <div class="mt-4">
-                                <v-btn color="teal" @click="loadExamplePDB" :loading="loading">
+                            <p class="body-1 mb-4">An interactive 3D platform for visualizing protein structures from Protein Data Bank (PDB) files</p>
+                            <v-icon x-large color="teal" class="mb-4">mdi-molecule</v-icon>
+                            <v-img
+                                src="https://cdn.pixabay.com/photo/2020/04/07/17/01/virus-5014495_1280.jpg"
+                                max-width="400"
+                                class="mx-auto my-4 rounded-lg"
+                                alt="Molecular structure"
+                            ></v-img>
+                            <div class="mt-6">
+                                <v-btn color="teal" @click="loadExamplePDB" :loading="loading" x-large>
                                     <v-icon left>mdi-molecule</v-icon>
                                     Load Example Structure
                                 </v-btn>
-                                <v-btn color="teal" outlined class="ml-2" @click="showUploadDialog = true">
+                                <v-btn color="teal" outlined class="ml-2" @click="showUploadDialog = true" x-large>
                                     <v-icon left>mdi-upload</v-icon>
                                     Upload Your Own
                                 </v-btn>
@@ -229,8 +240,16 @@
                     <v-card v-if="pdbContent" class="mb-4">
                         <v-card-title class="d-flex align-center">
                             <span>3D Interactive View</span>
+                            <v-chip class="ml-2" color="teal" small>Hover over atoms for details</v-chip>
                             <v-spacer></v-spacer>
-                            <v-switch v-model="showLabels" class="mt-0 mr-2" label="Show Labels" dense hide-details @change="toggleAtomLabels"></v-switch>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn icon v-bind="attrs" v-on="on" @click="resetView">
+                                        <v-icon>mdi-refresh</v-icon>
+                                    </v-btn>
+                                </template>
+                                <span>Reset View</span>
+                            </v-tooltip>
                             <v-btn icon small @click="toggleFullscreen('moleculeContainer')">
                                 <v-icon>{{ isFullscreen.molecule ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
                             </v-btn>
@@ -244,7 +263,6 @@
                                 <!-- Controls panel -->
                                 <div class="controls-panel">
                                     <button @click="resetView">Reset View</button>
-                                    <button @click="toggleAtomLabels(!showLabels)">{{ showLabels ? 'Hide' : 'Show' }} Labels</button>
                                 </div>
                                 
                                 <!-- Legend panel -->
