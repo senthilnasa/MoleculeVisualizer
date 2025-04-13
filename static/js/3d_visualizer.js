@@ -19,8 +19,8 @@ let currentSettings = {
     visualStyle: 'Ball and Stick',
     colorMapping: 'Atom',
     bondThreshold: 3.0,
-    atomSizeMultiplier: 1.0,
-    showLabels: false
+    atomSizeMultiplier: 1.0
+    // Removed showLabels option since we now use hover information
 };
 
 // Atom colors by element (CPK coloring)
@@ -928,22 +928,18 @@ function createBFactorGradientTexture(bFactors) {
 }
 
 /**
- * Toggle atom labels display
- * @param {boolean} show - Whether to show or hide labels
+ * Toggle atom labels display - used to be for the Show Labels toggle, 
+ * now adapted to work with hover functionality
+ * @param {boolean} show - If true, allows visibility on hover
  */
 function toggleLabels(show) {
-    currentSettings.showLabels = show;
+    // We now handle all label visibility through the hover functionality only
+    // This function is kept for backward compatibility
     
-    // Update labels visibility based on setting
+    // Hide all labels except for hovered atoms
     for (const label of atomLabels) {
-        if (show) {
-            // Show all labels
-            label.element.style.display = 'block';
-        } else {
-            // Hide all labels except for selected/hovered atoms
-            if (label.index !== selectedAtom && label.index !== hoveredAtom) {
-                label.element.style.display = 'none';
-            }
+        if (label.index !== hoveredAtom) {
+            label.element.style.display = 'none';
         }
     }
 }
