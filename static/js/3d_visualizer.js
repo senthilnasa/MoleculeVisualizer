@@ -210,7 +210,8 @@ function visualizeMolecule3D(pdbContent, options = {}) {
  */
 function parsePdbAtoms(pdbContent) {
     const atoms = [];
-    const lines = pdbContent.split('\\n');
+    // Handle both Unix and Windows line endings and properly handle escaped newlines
+    const lines = pdbContent.replace(/\\n/g, '\n').split(/\r?\n/);
     let residueIndex = 0;
     let currentResidue = null;
     
@@ -224,7 +225,14 @@ function parsePdbAtoms(pdbContent) {
                 const residueName = line.substring(17, 20).trim();
                 const chainId = line.substring(21, 22).trim();
                 const residueNumber = parseInt(line.substring(22, 26).trim());
-                const element = line.substring(76, 78).trim() || atomName[0];
+                // Get element from columns 76-78 if available, otherwise use first character of atom name
+                let element = line.substring(76, 78).trim();
+                if (!element) {
+                    // Extract first letter as the element (usually correct for common atoms)
+                    element = atomName.replace(/[^A-Za-z]/g, '')[0];
+                    // Convert to uppercase for consistency
+                    element = element ? element.toUpperCase() : 'C'; // Default to Carbon if unknown
+                }
                 const bFactor = parseFloat(line.substring(60, 66).trim() || '0');
                 
                 // Assign residue index (for coloring)
@@ -248,11 +256,12 @@ function parsePdbAtoms(pdbContent) {
                     bFactor: bFactor
                 });
             } catch (e) {
-                console.error('Error parsing PDB line:', e);
+                console.error('Error parsing PDB line:', e, line);
             }
         }
     }
     
+    console.log(`Parsed ${atoms.length} atoms for 3D rendering`);
     return atoms;
 }
 
