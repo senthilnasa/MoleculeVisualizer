@@ -242,14 +242,7 @@
                             <span>3D Interactive View</span>
                             <v-chip class="ml-2" color="teal" small>Hover over atoms for details</v-chip>
                             <v-spacer></v-spacer>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn icon v-bind="attrs" v-on="on" @click="resetView">
-                                        <v-icon>mdi-refresh</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Reset View</span>
-                            </v-tooltip>
+                            <!-- Reset View button removed as requested -->
                             <v-btn icon small @click="toggleFullscreen('moleculeContainer')">
                                 <v-icon>{{ isFullscreen.molecule ? 'mdi-fullscreen-exit' : 'mdi-fullscreen' }}</v-icon>
                             </v-btn>
@@ -260,9 +253,8 @@
                                 <!-- Atom information display -->
                                 <div id="atom-info-display"></div>
                                 
-                                <!-- Controls panel -->
+                                <!-- Controls panel removed as requested -->
                                 <div class="controls-panel">
-                                    <button @click="resetView">Reset View</button>
                                 </div>
                                 
                                 <!-- Legend panel -->

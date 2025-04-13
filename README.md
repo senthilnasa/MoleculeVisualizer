@@ -29,19 +29,65 @@ Molecular Visualizer is an interactive web-based platform for visualizing protei
   - Vue.js and Vuetify for UI components
   - HTML5 Canvas for 2D visualization
 - **Data Processing**: Custom PDB file parsing algorithms
+- **Containerization**: Docker for easy deployment
+
+## How to Run the Application
+
+### Method 1: Using Python directly
+
+#### Windows:
+1. Make sure Python 3.6+ is installed
+2. Double-click on `run.bat` or open a command prompt and run:
+   ```
+   run.bat
+   ```
+3. Open http://localhost:5000 in your browser
+
+#### Mac/Linux:
+1. Make sure Python 3.6+ is installed
+2. Open a terminal and run:
+   ```
+   chmod +x run.sh
+   ./run.sh
+   ```
+3. Open http://localhost:5000 in your browser
+
+### Method 2: Using Docker
+
+1. Make sure Docker is installed on your system
+2. Build the Docker image:
+   ```
+   docker build -t molecular-visualizer .
+   ```
+3. Run the Docker container:
+   ```
+   docker run -p 5000:5000 molecular-visualizer
+   ```
+4. Open http://localhost:5000 in your browser
+
+### Method 3: Using Python manually
+
+1. Install the required dependencies:
+   ```
+   pip install -e .
+   ```
+2. Run the application:
+   ```
+   python app.py
+   ```
+3. Open http://localhost:5000 in your browser
 
 ## How to Use
 
-1. Start the application with `python static_pdb_viewer.py`
-2. Open http://localhost:5000 in your browser
-3. Click "Load Example Structure" or upload your own PDB file
-4. Use mouse controls to interact with the 3D view:
+1. Once the application is running, open http://localhost:5000 in your browser
+2. Click "Load Example Structure" or upload your own PDB file
+3. Use mouse controls to interact with the 3D view:
    - Left-click + drag: Rotate the molecule
    - Right-click + drag: Pan the view
    - Scroll wheel: Zoom in/out
-5. Try different visualization styles and color mappings using the dropdown options
-6. Hover over atoms to see detailed information
-7. Click the fullscreen button for a more immersive experience
+4. Try different visualization styles and color mappings using the dropdown options
+5. Hover over atoms to see detailed information
+6. Click the fullscreen button for a more immersive experience
 
 ## Future Enhancements
 
@@ -69,5 +115,9 @@ Open source for educational and research purposes.
 │   └── examples/            # Example PDB files
 ├── templates/               # HTML templates
 │   └── index.html           # Main application page
-└── static_pdb_viewer.py     # Flask application
+├── app.py                   # Flask application
+├── setup.py                 # Package setup and dependencies
+├── run.bat                  # Windows run script
+├── run.sh                   # Mac/Linux run script
+└── Dockerfile               # Docker configuration file
 ```
